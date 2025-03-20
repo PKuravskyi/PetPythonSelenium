@@ -1,7 +1,7 @@
-import time
-
 import pytest
-from selenium.webdriver.common.by import By
+
+from pages.logged_in_successfully_page import LoggedInSuccessfullyPage
+from pages.login_page import LoginPage
 
 
 class TestPositiveScenarios:
@@ -9,23 +9,19 @@ class TestPositiveScenarios:
     @pytest.mark.login
     @pytest.mark.positive
     def test_positive_login(self, driver):
-        driver.get('https://practicetestautomation.com/practice-test-login/')
+        login_page = LoginPage(driver)
+        logged_in_successfully_page = LoggedInSuccessfullyPage(driver)
 
-        user_locator = driver.find_element(By.ID, 'username')
-        user_locator.send_keys("student")
+        login_page.open()
 
-        password_locator = driver.find_element(By.NAME, 'password')
-        password_locator.send_keys("Password123")
+        login_page.enter_username('student')
 
-        submit_locator = driver.find_element(By.XPATH, '//button[@class=("btn")]')
-        submit_locator.click()
-        time.sleep(1)
+        login_page.enter_password('Password123')
 
-        actual_url = driver.current_url
-        assert actual_url == 'https://practicetestautomation.com/logged-in-successfully/'
+        login_page.click_on_submit()
 
-        actual_text = driver.find_element(By.CLASS_NAME, 'post-title').text
-        assert actual_text == 'Logged In Successfully'
+        assert logged_in_successfully_page.retrieve_url() == 'https://practicetestautomation.com/logged-in-successfully/', 'Correct url should be opened, but is not'
 
-        log_out_button_locator = driver.find_element(By.LINK_TEXT, 'Log out')
-        assert log_out_button_locator.is_displayed()
+        assert logged_in_successfully_page.retrieve_title_text() == 'Logged In Successfully', 'Logged in message should be displayed, but is not'
+
+        assert logged_in_successfully_page.is_log_out_button_displayed(), 'Log out button should be displayed, but is not'

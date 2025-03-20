@@ -1,53 +1,64 @@
 import pytest
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions
+
+from pages.exceptions_page import ExceptionsPage
 
 
 class TestExceptionsScenarios:
 
     @pytest.mark.exceptions
     def test_no_such_element_exception(self, driver):
-        driver.implicitly_wait(0)
+        exceptions_page = ExceptionsPage(driver)
 
-        driver.get('https://practicetestautomation.com/practice-test-exceptions/')
+        exceptions_page.open()
 
-        driver.find_element(By.ID, 'add_btn').click()
+        exceptions_page.click_on_add()
 
-        wait = WebDriverWait(driver, 10)
-        row2_input = wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '#row2 input')))
-
-        assert row2_input.is_displayed(), 'Row 2 input should be displayed, but it\'s not'
+        assert exceptions_page.is_row2_displayed(), 'Row 2 input should be displayed, but it\'s not'
 
     @pytest.mark.exceptions
     def test_element_not_interactable_exception(self, driver):
-        driver.implicitly_wait(0)
+        exceptions_page = ExceptionsPage(driver)
 
-        driver.get('https://practicetestautomation.com/practice-test-exceptions/')
+        exceptions_page.open()
 
-        driver.find_element(By.ID, 'add_btn').click()
+        exceptions_page.click_on_add()
 
-        wait = WebDriverWait(driver, 10)
-        row2_input = wait.until(expected_conditions.presence_of_element_located((By.CSS_SELECTOR, '#row2 input')))
+        exceptions_page.enter_row2_value('Omelette')
 
-        row2_input.send_keys('Omelette')
-        driver.find_element(By.CSS_SELECTOR, '#row2 #save_btn').click()
+        exceptions_page.click_on_save_for_row2()
 
-        assert driver.find_element(By.ID,
-                                   'confirmation').text == 'Row 2 was saved', 'Row 2 should be saved, but was not'
+        assert exceptions_page.retrieve_confirmation_text() == 'Row 2 was saved', 'Row 2 should be saved, but was not'
 
     @pytest.mark.exceptions
     def test_invalid_element_state_exception(self, driver):
-        driver.implicitly_wait(0)
+        exceptions_page = ExceptionsPage(driver)
 
-        driver.get('https://practicetestautomation.com/practice-test-exceptions/')
+        exceptions_page.open()
 
-        driver.find_element(By.CSS_SELECTOR, '#row1 #edit_btn').click()
+        exceptions_page.click_on_edit_for_row1()
 
-        row1_input = driver.find_element(By.CSS_SELECTOR, '#row1 input')
-        row1_input.clear()
-        row1_input.send_keys('Sushi')
+        exceptions_page.enter_row1_value('Sushi')
 
-        driver.find_element(By.CSS_SELECTOR, '#row1 #save_btn').click()
+        exceptions_page.click_on_save_for_row1()
 
-        assert row1_input.get_attribute('value') == 'Sushi', 'Row 1 value should have changed, but did not'
+        assert exceptions_page.retrieve_row1_value() == 'Sushi', 'Row 1 value should have changed, but did not'
+
+    @pytest.mark.exceptions
+    def test_stale_element_reference_exception(self, driver):
+        exceptions_page = ExceptionsPage(driver)
+
+        exceptions_page.open()
+
+        exceptions_page.click_on_add()
+
+        assert not exceptions_page.is_instructions_label_visible(), 'Instructions should not be located on page, but is'
+
+    @pytest.mark.exceptions
+    def test_timeout_exception(self, driver):
+        exceptions_page = ExceptionsPage(driver)
+
+        exceptions_page.open()
+
+        exceptions_page.click_on_add()
+
+        assert exceptions_page.is_row2_displayed(), 'Row 2 should be visible, but is not'
